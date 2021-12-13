@@ -1,0 +1,555 @@
+﻿@page "/"
+@page "/mainpage"
+@inject HttpClient Http
+@using Newtonsoft.Json
+
+<div class="container-fluid bg-dark h-100 text-white" style="min-height:100%">
+    <nav class="navbar navbar-expand-lg navbar-light bg-dark row">
+        <a class="navbar-brand">Chess Stats</a>
+    </nav>
+    <div class="input-group mb-3 h-100 row">
+        <div class="input-group-prepend">
+             <button class="btn btn-outline-secondary" @onclick="getstats" style="color:gold;" type="button" id="button-addon4">Search</button>
+        </div>
+        <input type="text" class="form-control" @bind-value="@playerSearch" placeholder="Lichess username" aria-describedby="button-addon4">
+     </div>
+     <hr class="my-4" style="border-top: 1px solid white">
+     @if(playerStats != null)
+     {
+        <div class="row">
+            <div class="jumbotron col-10 mx-auto bg-secondary">
+                <h3 class="display-5">Main stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Username</th>
+                            <th scope="col">Playtime(hrs)</th>
+                            <th scope="col">Games played</th>
+                            <th scope="col">Wins</th>
+                            <th scope="col">Losses</th>
+                            <th scope="col">Draws</th>
+                            <th scope="col">Highest rating</th>
+                            <th scope="col">Lowest rating</th>
+                            <th scope="col">Most played</th>
+                            <th scope="col">Least played</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.username</td>
+                            <td>@getHoursPlayed()</td>
+                            <td>@playerStats.count.all</td>
+                            <td>@playerStats.count.win</td>
+                            <td>@playerStats.count.loss</td>
+                            <td>@playerStats.count.draw</td>
+                            <td>@getHighestOrLowestRating(true)</td>
+                            <td>@getHighestOrLowestRating(false)</td>
+                            <td>@getHighestOrLowestPlayed(true)</td>
+                            <td>@getHighestOrLowestPlayed(false)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr class="my-4" style="border-top: 1px solid white">
+        <div class="row mb-2">
+            <h1 class="mr-auto">Standard time controls</h1>
+        </div>
+        <div class="row">
+            <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Classical stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.classical.games</td>
+                            <td>@playerStats.perfs.classical.rating</td>
+                            <td>@playerStats.perfs.classical.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+                <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Rapid stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.rapid.games</td>
+                            <td>@playerStats.perfs.rapid.rating</td>
+                            <td>@playerStats.perfs.rapid.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr class="my-4" style="border-top: 1px solid white">
+        <div class="row mb-2">
+            <h1 class="mr-auto">Fast time controls</h1>
+        </div>
+        <div class="row">
+            <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Blitz stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.blitz.games</td>
+                            <td>@playerStats.perfs.blitz.rating</td>
+                            <td>@playerStats.perfs.blitz.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+                <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Bullet stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.bullet.games</td>
+                            <td>@playerStats.perfs.bullet.rating</td>
+                            <td>@playerStats.perfs.bullet.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+         <hr class="my-4" style="border-top: 1px solid white">
+        <div class="row mb-2">
+            <h1 class="mr-auto">Fun gamemodes</h1>
+        </div>
+        <div class="row">
+            <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Anti-chess stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.antichess.games</td>
+                            <td>@playerStats.perfs.antichess.rating</td>
+                            <td>@playerStats.perfs.antichess.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+                <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Atomic stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.atomic.games</td>
+                            <td>@playerStats.perfs.atomic.rating</td>
+                            <td>@playerStats.perfs.atomic.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Crazyhouse stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.crazyhouse.games</td>
+                            <td>@playerStats.perfs.crazyhouse.rating</td>
+                            <td>@playerStats.perfs.crazyhouse.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+                <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">King of the hill stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.kingOfTheHill.games</td>
+                            <td>@playerStats.perfs.kingOfTheHill.rating</td>
+                            <td>@playerStats.perfs.kingOfTheHill.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr class="my-4" style="border-top: 1px solid white">
+        <div class="row mb-2">
+            <h1 class="mr-auto">Puzzles</h1>
+        </div>
+        <div class="row">
+            <div class="jumbotron col-xl-5 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Puzzles stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Progress rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.puzzle.games</td>
+                            <td>@playerStats.perfs.puzzle.rating</td>
+                            <td>@playerStats.perfs.puzzle.prog</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="jumbotron col-xl-3 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Puzzle storm stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.storm.runs</td>
+                            <td>@playerStats.perfs.storm.score</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="jumbotron col-xl-2 bg-secondary ml-auto mr-auto">
+                <h3 class="display-5">Puzzle streak stats</h3>
+                <hr class="my-4" style="border-top: 1px solid white">
+                <table class="table table-dark text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Games</th>
+                            <th scope="col">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@playerStats.perfs.streak.runs</td>
+                            <td>@playerStats.perfs.streak.score</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+     }
+</div>
+
+  
+
+
+
+
+
+@code {
+
+    public Stats playerStats;
+    public String playerSearch;
+
+    public async Task getstats()
+    {
+        try
+        {
+            playerStats = await Http.GetFromJsonAsync<Stats>(String.Format("https://lichess.org/api/user/{0}", playerSearch));
+        }
+        catch
+        {
+            playerStats = null;
+        }
+
+    }
+
+    public int getHoursPlayed()
+    {
+        return playerStats.playTime.total / 60;
+    }
+
+    public string getHighestOrLowestRating(bool max)
+    {
+        Dictionary<string, int> ratings = new Dictionary<string, int>();
+        ratings.Add("Classical", playerStats.perfs.classical.rating);
+        ratings.Add("Rapid", playerStats.perfs.rapid.rating);
+        ratings.Add("Blitz", playerStats.perfs.blitz.rating);
+        ratings.Add("Bullet", playerStats.perfs.bullet.rating);
+        ratings.Add("Anti-chess", playerStats.perfs.antichess.rating);
+        ratings.Add("Atomic", playerStats.perfs.atomic.rating);
+        ratings.Add("Crazyhouse", playerStats.perfs.crazyhouse.rating);
+        ratings.Add("Kingofthehill", playerStats.perfs.kingOfTheHill.rating);
+        ratings.Add("Puzzles", playerStats.perfs.puzzle.rating);
+
+        var maxRating = 0;
+        if (max)
+        {
+            maxRating = ratings.Values.Max();
+        }
+        else
+        {
+            maxRating = ratings.Values.Min();
+        }
+
+       
+        var gameMode = ratings.FirstOrDefault(x => x.Value == maxRating).Key;
+
+        return String.Format("{0}: {1}", gameMode, maxRating);
+    }
+
+    public string getHighestOrLowestPlayed(bool max)
+    {
+        Dictionary<string, int> ratings = new Dictionary<string, int>();
+        ratings.Add("Classical", playerStats.perfs.classical.games);
+        ratings.Add("Rapid", playerStats.perfs.rapid.games);
+        ratings.Add("Blitz", playerStats.perfs.blitz.games);
+        ratings.Add("Bullet", playerStats.perfs.bullet.games);
+        ratings.Add("Anti-chess", playerStats.perfs.antichess.games);
+        ratings.Add("Atomic", playerStats.perfs.atomic.games);
+        ratings.Add("Crazyhouse", playerStats.perfs.crazyhouse.games);
+        ratings.Add("Kingofthehill", playerStats.perfs.kingOfTheHill.games);
+        ratings.Add("Puzzles", playerStats.perfs.puzzle.games);
+
+        var maxRating = 0;
+        if (max)
+        {
+            maxRating = ratings.Values.Max();
+        }
+        else
+        {
+            maxRating = ratings.Values.Min();
+        }
+
+       
+        var gameMode = ratings.FirstOrDefault(x => x.Value == maxRating).Key;
+
+        return String.Format("{0}: {1}", gameMode, maxRating);
+    }
+
+
+    public class Antichess
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+    }
+
+    public class Atomic
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+        public bool prov { get; set; }
+    }
+
+    public class Blitz
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+    }
+
+    public class KingOfTheHill
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+        public bool prov { get; set; }
+    }
+
+    public class Crazyhouse
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+    }
+
+    public class Bullet
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+        public bool prov { get; set; }
+    }
+
+    public class Correspondence
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+        public bool prov { get; set; }
+    }
+
+    public class Horde
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+        public bool prov { get; set; }
+    }
+
+    public class Puzzle
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+    }
+
+    public class Classical
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+        public bool prov { get; set; }
+    }
+
+    public class Rapid
+    {
+        public int games { get; set; }
+        public int rating { get; set; }
+        public int rd { get; set; }
+        public int prog { get; set; }
+    }
+
+    public class Storm
+    {
+        public int runs { get; set; }
+        public int score { get; set; }
+    }
+
+    public class Streak
+    {
+        public int runs { get; set; }
+        public int score { get; set; }
+    }
+
+    public class Perfs
+    {
+        public Antichess antichess { get; set; }
+        public Atomic atomic { get; set; }
+        public Blitz blitz { get; set; }
+        public KingOfTheHill kingOfTheHill { get; set; }
+        public Crazyhouse crazyhouse { get; set; }
+        public Bullet bullet { get; set; }
+        public Correspondence correspondence { get; set; }
+        public Horde horde { get; set; }
+        public Puzzle puzzle { get; set; }
+        public Classical classical { get; set; }
+        public Rapid rapid { get; set; }
+        public Storm storm { get; set; }
+        public Streak streak { get; set; }
+    }
+
+    public class PlayTime
+    {
+        public int total { get; set; }
+        public int tv { get; set; }
+    }
+
+    public class Count
+    {
+        public int all { get; set; }
+        public int rated { get; set; }
+        public int ai { get; set; }
+        public int draw { get; set; }
+        public int drawH { get; set; }
+        public int loss { get; set; }
+        public int lossH { get; set; }
+        public int win { get; set; }
+        public int winH { get; set; }
+        public int bookmark { get; set; }
+        public int playing { get; set; }
+        public int import { get; set; }
+        public int me { get; set; }
+    }
+
+    public class Stats
+    {
+        public string id { get; set; }
+        public string username { get; set; }
+        public Perfs perfs { get; set; }
+        public long createdAt { get; set; }
+        public bool online { get; set; }
+        public long seenAt { get; set; }
+        public PlayTime playTime { get; set; }
+        public string url { get; set; }
+        public Count count { get; set; }
+        public bool followable { get; set; }
+        public bool following { get; set; }
+        public bool blocking { get; set; }
+        public bool followsYou { get; set; }
+    }
+
+
+
+
+
+}
