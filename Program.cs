@@ -8,9 +8,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CA3A
-{
-    public class Program
+
+public class Program
     {
         public static async Task Main(string[] args)
         {
