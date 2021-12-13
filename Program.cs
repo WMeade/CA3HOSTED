@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-
 public class Program
     {
         public static async Task Main(string[] args)
@@ -27,5 +26,5 @@ public class Program
            
             await builder.Build().RunAsync();
         }
-    }
 }
+
